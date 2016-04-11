@@ -6,7 +6,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -15,6 +19,7 @@ import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import core.Worker;
+import utilities.Thumbnails;
 
 
 /**
@@ -31,6 +36,8 @@ public class BinaryTreePanel extends JPanel {
     private JPanel circuits = new JPanel(new GridLayout(1, 2));
     private JPanel inputImagePane;
     private ImagePanel ip;
+    private ImagePanel ipFT;
+    private ImagePanel ipFM;
     
     private Worker worker; 
     private Thread thread;
@@ -104,13 +111,28 @@ public class BinaryTreePanel extends JPanel {
 
         ip = new ImagePanel();
         inputImagePane.add(ip);
+        ipFT = new ImagePanel(0.75f);
+        facePane.add(ipFT);
+        ipFM = new ImagePanel(0.75f);
+        matchPane.add(ipFM);
         
         
-        worker = new Worker(ip);
+        worker = new Worker(ip, ipFT, ipFM);
         thread = new Thread(worker);
         thread.start();
-        
-        
     }
     
+    private void testCropImage() {
+        BufferedImage base = null;
+        BufferedImage small = null;
+        try {
+            base = ImageIO.read(new File("test.bmp"));
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        ipFT.setImageQuick(base);
+        //small = Thumbnails.scaleTarget(base, 182, 163, 55);
+        small = Thumbnails.scaleTarget(base, 441, 258, 150);
+        ipFM.setImageQuick(small);
+    }
 }
