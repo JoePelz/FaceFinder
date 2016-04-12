@@ -5,5 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/webcam-capture"/>
 	<classpathentry kind="lib" path="D:/Projects/Webcam-Capture/slf4j-api-1.7.2.jar"/>
 	<classpathentry kind="lib" path="D:/Projects/Webcam-Capture/bridj-0.6.2.jar"/>
+	<classpathentry kind="lib" path="D:/Projects/FaceFinder/lib/jblas-1.2.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

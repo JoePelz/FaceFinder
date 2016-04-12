@@ -63,6 +63,7 @@ public class ImagePanel extends JPanel implements Runnable {
         if (bmp == null) return;
         updateImage(bmp);
         Graphics2D g = (Graphics2D)getGraphics();
+        g.scale(scale, scale);
         g.drawImage(bmp, 0, 0, null);
         g.dispose();
      }

@@ -9,6 +9,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -36,8 +38,8 @@ public class BinaryTreePanel extends JPanel {
     private JPanel circuits = new JPanel(new GridLayout(1, 2));
     private JPanel inputImagePane;
     private ImagePanel ip;
-    private ImagePanel ipFT;
-    private ImagePanel ipFM;
+    private CardPanel ipFT;
+    private CardPanel ipFM;
     
     private Worker worker; 
     private Thread thread;
@@ -94,13 +96,22 @@ public class BinaryTreePanel extends JPanel {
         
         add(circuits, BorderLayout.CENTER);
         
-        JButton btnBalance = new JButton("Rebalance Tree");
+        JPanel btnLayout = new JPanel();
+        JButton btnBalance = new JButton("Kill Camera");
         btnBalance.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 worker.stop();
             }
         });
-        add(btnBalance, BorderLayout.PAGE_END);
+        JButton btnSnapshot = new JButton("Toggle Snapshot");
+        btnSnapshot.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                worker.toggleSnapshot();
+            }
+        });
+        add(btnLayout, BorderLayout.PAGE_END);
+        btnLayout.add(btnBalance);
+        btnLayout.add(btnSnapshot);
         
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -111,11 +122,10 @@ public class BinaryTreePanel extends JPanel {
 
         ip = new ImagePanel();
         inputImagePane.add(ip);
-        ipFT = new ImagePanel(0.75f);
+        ipFT = new CardPanel(0.75f);
         facePane.add(ipFT);
-        ipFM = new ImagePanel(0.75f);
+        ipFM = new CardPanel(0.75f);
         matchPane.add(ipFM);
-        
         
         worker = new Worker(ip, ipFT, ipFM);
         thread = new Thread(worker);

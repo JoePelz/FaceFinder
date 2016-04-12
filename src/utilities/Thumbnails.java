@@ -58,4 +58,12 @@ public class Thumbnails {
         BufferedImage image = gc.createCompatibleImage(w, h);
         return image;
     }
+    
+    public static BufferedImage getGreyscale(BufferedImage source) {
+        BufferedImage bi = new BufferedImage(RES, RES, BufferedImage.TYPE_BYTE_GRAY);
+        Graphics2D g2d = bi.createGraphics();
+        g2d.drawImage(source, 0, 0, null);
+        g2d.dispose();
+        return bi;
+    }
 }
