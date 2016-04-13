@@ -39,7 +39,7 @@ public class ImagePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         if (image != null) {
             g.scale(scale, scale);
-            g.drawImage(image, 0, 0, null); // see javadoc for more info on the parameters
+            g.drawImage(image, 0, 0, null);
         }
         if (center.x != 0) {
             g.setColor(Color.YELLOW);

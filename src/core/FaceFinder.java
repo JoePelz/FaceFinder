@@ -5,7 +5,12 @@ package core;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.LinkedBlockingQueue;
 
+import core.MatchTask.Command;
 import facerecog.FaceImage;
 import facerecog.FaceRecognition;
 import facerecog.FaceSpaceTheta;
@@ -21,14 +26,25 @@ public class FaceFinder {
     private static final int WIDTH = 640;
     private static final int HEIGHT = 480;
     private static final int RES = 256;
+    private static final int N_THREADS = Runtime.getRuntime().availableProcessors();
     
+    private BlockingQueue<MatchTask> workQueue = new LinkedBlockingQueue<MatchTask>();
+    private CyclicBarrier barrier = new CyclicBarrier(N_THREADS + 1);
+    private Thread[] matchWorkers; 
     private FaceRecognition recognizer;
     private ImagePanel ref;
+    private double bestDist;
+    private Point bestPoint = new Point();
     
     
     public FaceFinder(FaceRecognition recog, ImagePanel panel) {
         recognizer = recog;
         ref = panel;
+        matchWorkers = new Thread[N_THREADS];
+        for (int i = 0; i < N_THREADS; i++) {
+            matchWorkers[i] = new Thread(new MatchWorker(workQueue, barrier, recognizer, this));
+            matchWorkers[i].start();
+        }
     }
     
     public BufferedImage findBest(BufferedImage scene) {
@@ -55,30 +71,39 @@ public class FaceFinder {
         int yrange = HEIGHT - RES;
         int steps = 4;
         
-        BufferedImage tempImg;
-        Point best = new Point();
-        double bestDist = Double.MAX_VALUE;
-        double tempDist;
-        
         //TODO: optimization available here. Instead of generating an entire image for each face test,
-        //  just create an iterator that will access the important pixels.
+        //  just create an iterator that will access the important pixels?
         
         //test many positions for faces.
+        bestDist = Double.MAX_VALUE;
+        MatchTask task;
         for (int x = RES/2; x <= WIDTH - RES/2; x += xrange / steps) {
             for (int y = RES / 2; y <= HEIGHT - RES/2; y += yrange / steps) {
-                tempImg = Thumbnails.scaleTarget(scene, x, y, 128);
-                tempImg = Thumbnails.getWider(tempImg);
-                FaceImage testFace = new FaceImage(tempImg, "testFace");
-                tempDist = recognizer.getThetaDistance(testFace);
-                if (tempDist < bestDist) {
-                    bestDist = tempDist;
-                    best.x = x;
-                    best.y = y;
-                }
+                task = new MatchTask(Command.MATCHING);
+                task.matchpoint = new Point(x, y);
+                task.scene = scene;
+                workQueue.add(task);
             }
         }
         
-        return best;
+        for (int i = 0; i < N_THREADS; i++) {
+            workQueue.add(new MatchTask(Command.BARRIER));
+        }
+        
+        try {
+            barrier.await();
+        } catch (InterruptedException | BrokenBarrierException e) {
+            e.printStackTrace();
+        }
+        
+        return bestPoint;
+    }
+    
+    public synchronized void gridResult(Point p, double dist) {
+        if (dist < bestDist) {
+            bestDist = dist;
+            bestPoint.setLocation(p);
+        }
     }
 }
 

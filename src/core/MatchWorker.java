@@ -4,7 +4,14 @@
 package core;
 
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
+import facerecog.FaceImage;
+import facerecog.FaceRecognition;
+import utilities.Thumbnails;
 
 /**
  * 
@@ -13,9 +20,15 @@ import java.util.concurrent.BlockingQueue;
  */
 public class MatchWorker implements Runnable {
     private BlockingQueue<MatchTask> workQueue;
+    private CyclicBarrier barrier;
+    private FaceRecognition recognizer;
+    private FaceFinder parent;
     
-    public MatchWorker(BlockingQueue<MatchTask> work) {
-        
+    public MatchWorker(BlockingQueue<MatchTask> work, CyclicBarrier barrier, FaceRecognition recog, FaceFinder owner) {
+        workQueue = work;
+        this.barrier = barrier;
+        recognizer = recog;
+        parent = owner;
     }
     
     @Override
@@ -32,7 +45,7 @@ public class MatchWorker implements Runnable {
                 signalBarrier();
                 break;
             case MATCHING:
-                checkMatch(task.matchpoint);
+                checkMatch(task.matchpoint, task.scene);
                 break;
             case SHUTDOWN:
                 return;
@@ -43,10 +56,21 @@ public class MatchWorker implements Runnable {
     }
     
     private void signalBarrier() {
-        
+        try {
+            barrier.await();
+        } catch (InterruptedException | BrokenBarrierException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public void checkMatch(Point point) {
-        
+    public void checkMatch(Point point, BufferedImage scene) {
+        BufferedImage tempImg;
+        double tempDist;
+        tempImg = Thumbnails.scaleTarget(scene, point.x, point.y, 128);
+        tempImg = Thumbnails.getWider(tempImg);
+        FaceImage testFace = new FaceImage(tempImg, "testFace");
+        tempDist = recognizer.getThetaDistance(testFace);
+        parent.gridResult(point, tempDist);
     }
 }

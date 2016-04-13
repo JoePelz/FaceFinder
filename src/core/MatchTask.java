@@ -4,6 +4,7 @@
 package core;
 
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 
 /**
  * 
@@ -14,4 +15,9 @@ public class MatchTask {
     public enum Command { SHUTDOWN, MATCHING, BARRIER };
     public Command command;
     public Point matchpoint;
+    public BufferedImage scene;
+    
+    public MatchTask(Command cmd) {
+        command = cmd;
+    }
 }
