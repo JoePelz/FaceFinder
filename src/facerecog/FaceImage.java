@@ -21,7 +21,7 @@ public class FaceImage extends BufferedImage
 		super(img.getWidth(), img.getHeight(), TYPE_3BYTE_BGR);
 		
 		getGraphics().drawImage(img, 0, 0, null);
-				
+		
 		this.name = name;
 		this.array = toArray();
 	}

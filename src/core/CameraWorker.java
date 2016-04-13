@@ -5,42 +5,45 @@ package core;
 
 import java.awt.image.BufferedImage;
 import java.util.SortedMap;
+import java.util.concurrent.Semaphore;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamResolution;
 
+import core.EntryPoint.Mode;
 import facerecog.FaceImage;
 import facerecog.FaceRecognition;
+import facerecog.ProcessResult;
 import ui.CardPanel;
 import ui.ImagePanel;
-import utilities.Thumbnails;
 
 /**
  * 
  * @author Joe Pelz
  * @version 1.0
  */
-public class Worker implements Runnable {
+public class CameraWorker implements Runnable {
     private Webcam webcam;
     private ImagePanel ip;
     private CardPanel ipCrop;
     private CardPanel ipResult;
     private volatile boolean active;
     private volatile boolean snapshot;
-    private volatile boolean doMatch;
-    private BufferedImage bmp_old;
     private BufferedImage bmp_new;
-    private BufferedImage thumbnail;
-    private FaceRecognition recognizer;
+    private FaceImage thumbnail;
+    private FaceFinder faceFinder;
+    private FaceRecognition faceRecognizer;
+    private Semaphore sem_wait;
     
-    public Worker(ImagePanel destination, CardPanel crop, CardPanel result) {
+    public CameraWorker(ImagePanel destination, CardPanel crop, CardPanel result) {
         ip = destination;
         ipCrop = crop;
         ipResult = result;
         active = true;
         snapshot = false;
-        doMatch = false;
-        recognizer = new FaceRecognition();
+        faceRecognizer = new FaceRecognition();
+        faceFinder = new FaceFinder(faceRecognizer, ip);
+        sem_wait = new Semaphore(0);
     }
     
     public synchronized void stop() {
@@ -49,7 +52,7 @@ public class Worker implements Runnable {
     
     public synchronized void toggleSnapshot() {
         snapshot = !snapshot;
-        doMatch = true;
+        sem_wait.release();
     }
 
     @Override
@@ -64,26 +67,23 @@ public class Worker implements Runnable {
             //save image for UI Thread
             ip.setImage(bmp_new);
             
-            /*
-            if (snapshot && doMatch) {
-                //leave ipCrop alone now.
-                checkForMatch();
-                doMatch = false;
-            } else if (!snapshot){
-                thumbnail = Thumbnails.scaleTarget(bmp_new, 320, 240, 128);
-                ipCrop.setImage(thumbnail);
-            }
-            */
-            thumbnail = Thumbnails.scaleTarget(bmp_new, 320, 240, 128);
-            //thumbnail = Thumbnails.getGreyscale(thumbnail);
-            ipCrop.setImage(thumbnail, "Test \nFace");
+            thumbnail = faceFinder.findBest(bmp_new);
+            
+            ipCrop.setImage(thumbnail, "  Test Face");
             checkForMatch();
+            
+            if (EntryPoint.mode == Mode.DEBUG || EntryPoint.mode == Mode.DEBUGX) {
+                try {
+                    sem_wait.acquire();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         webcam.close();
     }
     
-    private void checkForMatch() {
-        
+    private void checkForMatch() {        
         /*
         BufferedImage base = null;
         try {
@@ -95,18 +95,32 @@ public class Worker implements Runnable {
         FaceImage testFace = new FaceImage(base, "testFace");
         */
         
-        //do EigenMatching
-        FaceImage testFace = new FaceImage(thumbnail, "testFace");
         
-        SortedMap<Double, FaceImage> map = recognizer.compare(testFace);
+        //do EigenMatching
+        SortedMap<Double, FaceImage> map = faceRecognizer.compare(thumbnail);
+        
         //display best image in ipResult
         FaceImage result = map.get(map.firstKey());
         ipResult.setImage(result, result.getName().substring(0, result.getName().length() - 7));
-        System.out.println("Distance from match: " + map.firstKey());
+        ProcessResult isFace = new ProcessResult(thumbnail, faceRecognizer, map);
+
+        if (isFace.isFace) {
+            System.out.print("FACE |");
+        }
+        if (isFace.isLikeFace) {
+            System.out.print("LIKE FACE | ");
+        }
+        if (isFace.isNewFace) {
+            System.out.print("NEW FACE | ");
+        }
+        if (isFace.isNotFace) {
+            System.out.print("NOT FACE | ");
+        }
+        System.out.println("theta: " + map.firstKey());
     }
     
     private void getNewImage() {
-        bmp_old = bmp_new;
+        //bmp_old = bmp_new;
         if (webcam.isOpen()) {
             bmp_new = webcam.getImage();
         }

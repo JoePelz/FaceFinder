@@ -101,6 +101,8 @@ public class ImageLoader
 			img = ImageIO.read(file);
 		} catch (IOException e) { }
 		
+		img = Thumbnails.getWider(img);
+		
 		return new FaceImage(img, file.getName());
 	}
 	
