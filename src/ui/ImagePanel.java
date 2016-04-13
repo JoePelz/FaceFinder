@@ -14,6 +14,9 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import core.EntryPoint;
+import core.EntryPoint.Mode;
+
 /**
  * 
  * @author Joe Pelz
@@ -41,9 +44,11 @@ public class ImagePanel extends JPanel implements Runnable {
             g.scale(scale, scale);
             g.drawImage(image, 0, 0, null);
         }
-        if (center.x != 0) {
-            g.setColor(Color.YELLOW);
-            g.drawRect(center.x - 64, center.y - 128, 128, 256);
+        if (EntryPoint.mode == Mode.BESTMATCH) {
+            if (center.x != 0) {
+                g.setColor(Color.YELLOW);
+                g.drawRect(center.x - 64, center.y - 128, 128, 256);
+            }
         }
     }
 
@@ -63,8 +68,47 @@ public class ImagePanel extends JPanel implements Runnable {
         }
     }
     
-    public void setCenter(Point c) {
-        center.setLocation(c);
+    public void setCenter(final Point c, boolean winner, final double theta) {
+        if (winner) {
+            center.setLocation(c);
+        }
+        
+        if (EntryPoint.mode == Mode.DEBUG) {
+            final Runnable drawBrightBox = new Runnable() {
+                public void run() {
+                    Graphics2D g = (Graphics2D)getGraphics();
+                    g.setColor(Color.YELLOW);
+                    g.drawRect(c.x - 64, c.y - 128, 128, 256);
+                    g.drawString(String.format("%d", (int)theta), c.x, c.y);
+                    g.dispose();
+                }
+            };
+            final Runnable drawDimBox = new Runnable() {
+                public void run() {
+                    Graphics2D g = (Graphics2D)getGraphics();
+                    g.setColor(Color.PINK);
+                    g.drawRect(c.x - 64, c.y - 128, 128, 256);
+                    //g.drawString(String.format("%.2f", theta), c.x, c.y);
+                    g.drawString(String.format("%d", (int)theta), c.x, c.y);
+                    g.dispose();
+                }
+            };
+            if (winner) {
+                try {
+                    SwingUtilities.invokeAndWait(drawBrightBox);
+                } catch (InvocationTargetException | InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(drawDimBox);
+                } catch (InvocationTargetException | InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
     }
     
     public void setImageQuick(BufferedImage bmp) {

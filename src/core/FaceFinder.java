@@ -10,10 +10,12 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import core.EntryPoint.Mode;
 import core.MatchTask.Command;
 import facerecog.FaceImage;
 import facerecog.FaceRecognition;
 import facerecog.FaceSpaceTheta;
+import facerecog.ProcessResult;
 import ui.ImagePanel;
 import utilities.Thumbnails;
 
@@ -47,23 +49,20 @@ public class FaceFinder {
         }
     }
     
-    public BufferedImage findBest(BufferedImage scene) {
+    public FaceImage findBest(BufferedImage scene) {
         BufferedImage result;
-
-        Point best = gridSearch(scene);
-        result = Thumbnails.scaleTarget(scene, best.x, best.y, 128);
-        result = Thumbnails.getWider(result);
-        FaceImage testFace = new FaceImage(result, "testFace");
+        FaceImage testFace;
+        Point best = new Point(320, 240);
         
-        double theta = recognizer.getThetaDistance(testFace);
-        FaceSpaceTheta thetaRange = recognizer.getFaceSpaceTheta();
-        if (theta < thetaRange.getMaxTheta()) {
-            System.out.println("FACE!  -  Distance theta: " + theta);            
-        } else {
-            System.out.println("       -  Distance theta: " + theta);
+        if (EntryPoint.mode == Mode.BESTMATCH || EntryPoint.mode == Mode.DEBUG){
+            best = gridSearch(scene);
         }
-        ref.setCenter(best);
-        return result;
+        
+        result = Thumbnails.scaleTarget(scene, best.x, best.y);
+        testFace = new FaceImage(result, "testFace");
+        
+        ref.setCenter(best, true, bestDist);
+        return testFace;
     }
     
     public Point gridSearch(BufferedImage scene) {
@@ -100,6 +99,7 @@ public class FaceFinder {
     }
     
     public synchronized void gridResult(Point p, double dist) {
+        ref.setCenter(p, false, dist);
         if (dist < bestDist) {
             bestDist = dist;
             bestPoint.setLocation(p);

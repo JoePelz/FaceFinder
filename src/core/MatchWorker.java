@@ -67,8 +67,9 @@ public class MatchWorker implements Runnable {
     public void checkMatch(Point point, BufferedImage scene) {
         BufferedImage tempImg;
         double tempDist;
-        tempImg = Thumbnails.scaleTarget(scene, point.x, point.y, 128);
-        tempImg = Thumbnails.getWider(tempImg);
+        //tempImg = Thumbnails.scaleTarget(scene, point.x, point.y, 128);
+        //tempImg = Thumbnails.getWider(tempImg);
+        tempImg = Thumbnails.scaleTarget(scene, point.x, point.y);
         FaceImage testFace = new FaceImage(tempImg, "testFace");
         tempDist = recognizer.getThetaDistance(testFace);
         parent.gridResult(point, tempDist);

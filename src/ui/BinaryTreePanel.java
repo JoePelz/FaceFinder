@@ -6,22 +6,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Queue;
 
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import core.CameraWorker;
-import utilities.Thumbnails;
+import core.EntryPoint;
 
 
 /**
@@ -58,21 +53,31 @@ public class BinaryTreePanel extends JPanel {
         final int numberOfForms = 3;
         JPanel entryPane = new JPanel(new GridLayout(2, numberOfForms));
         JLabel lPreOrder  = new JLabel("  Pre-Order");
-        JLabel lInOrder   = new JLabel("  In-Order");
+        JLabel lInOrder   = new JLabel("  Mode");
         JLabel lPostOrder = new JLabel("  Post-Order");
         final JTextField tePreOrder  = new JTextField();
-        final JTextField teInOrder   = new JTextField();
+        String[] options = new String[3];
+        options[0] = "Continuous";
+        options[1] = "Best Match";
+        options[2] = "Debug";
+        final JComboBox<String> cbMode   = new JComboBox<String>(options);
         final JTextField tePostOrder = new JTextField();
-        teInOrder.setEditable(false);
+        cbMode.setEditable(false);
         tePostOrder.setEditable(false);
         entryPane.add(lPreOrder);
         entryPane.add(lInOrder);
         entryPane.add(lPostOrder);
         entryPane.add(tePreOrder);
-        entryPane.add(teInOrder);
+        entryPane.add(cbMode);
         entryPane.add(tePostOrder);
         add(entryPane, BorderLayout.PAGE_START);
 
+        cbMode.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                EntryPoint.mode = EntryPoint.Mode.values()[cbMode.getSelectedIndex()];
+            }
+        });
+        
         inputImagePane = new JPanel();
         myBorder = BorderFactory.createTitledBorder("Image Spot");
         inputImagePane.setBorder(myBorder);
@@ -130,19 +135,5 @@ public class BinaryTreePanel extends JPanel {
         worker = new CameraWorker(ip, ipFT, ipFM);
         thread = new Thread(worker);
         thread.start();
-    }
-    
-    private void testCropImage() {
-        BufferedImage base = null;
-        BufferedImage small = null;
-        try {
-            base = ImageIO.read(new File("test.bmp"));
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        ipFT.setImageQuick(base);
-        //small = Thumbnails.scaleTarget(base, 182, 163, 55);
-        small = Thumbnails.scaleTarget(base, 441, 258, 150);
-        ipFM.setImageQuick(small);
     }
 }

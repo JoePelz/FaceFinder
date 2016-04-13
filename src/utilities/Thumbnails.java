@@ -18,7 +18,7 @@ import java.awt.image.BufferedImage;
  */
 public class Thumbnails {
     public static final int RES = 256;
-    
+
     public static BufferedImage scaleTarget(BufferedImage source, int centerX, int centerY, double radius) {
         //BufferedImage bi = getCompatibleImage(RES, RES);
         BufferedImage bi = new BufferedImage(RES, RES, BufferedImage.TYPE_INT_ARGB);
@@ -26,6 +26,24 @@ public class Thumbnails {
         double scale = (double) RES / (radius * 2);
         AffineTransform at = AffineTransform.getScaleInstance(scale, scale);
         at.translate(-centerX + radius, -centerY + radius);
+        
+        g2d.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING, 
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(
+                RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawRenderedImage(source, at);
+        g2d.dispose();
+        return bi;
+    }
+    
+    public static BufferedImage scaleTarget(BufferedImage source, int centerX, int centerY) {
+        //BufferedImage bi = getCompatibleImage(RES, RES);
+        BufferedImage bi = new BufferedImage(RES, RES, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = bi.createGraphics();
+        AffineTransform at = AffineTransform.getScaleInstance(2.0f, 1.0f);
+        at.translate(-centerX + 64, -centerY + 128);
         
         g2d.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING, 
