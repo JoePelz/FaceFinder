@@ -20,7 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-import core.Worker;
+import core.CameraWorker;
 import utilities.Thumbnails;
 
 
@@ -41,7 +41,7 @@ public class BinaryTreePanel extends JPanel {
     private CardPanel ipFT;
     private CardPanel ipFM;
     
-    private Worker worker; 
+    private CameraWorker worker; 
     private Thread thread;
     
     /**
@@ -127,7 +127,7 @@ public class BinaryTreePanel extends JPanel {
         ipFM = new CardPanel(0.75f);
         matchPane.add(ipFM);
         
-        worker = new Worker(ip, ipFT, ipFM);
+        worker = new CameraWorker(ip, ipFT, ipFM);
         thread = new Thread(worker);
         thread.start();
     }

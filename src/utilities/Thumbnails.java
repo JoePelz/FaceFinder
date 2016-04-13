@@ -66,4 +66,14 @@ public class Thumbnails {
         g2d.dispose();
         return bi;
     }
+    
+    public static BufferedImage getWider(BufferedImage source) {
+        BufferedImage bi = new BufferedImage(RES, RES, BufferedImage.TYPE_BYTE_GRAY);
+        Graphics2D g2d = bi.createGraphics();
+        AffineTransform at = AffineTransform.getScaleInstance(2.0f,1.0f);
+        at.translate(-64, 0);
+        g2d.drawRenderedImage(source, at);
+        g2d.dispose();
+        return bi;
+    }
 }
