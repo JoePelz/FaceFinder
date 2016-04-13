@@ -54,7 +54,10 @@ public class FaceFinder {
         FaceImage testFace;
         Point best = new Point(320, 240);
         
-        if (EntryPoint.mode == Mode.BESTMATCH || EntryPoint.mode == Mode.DEBUG){
+        if (EntryPoint.mode == Mode.BESTMATCH 
+                || EntryPoint.mode == Mode.BESTMATCHX
+                || EntryPoint.mode == Mode.DEBUG
+                || EntryPoint.mode == Mode.DEBUGX){
             best = gridSearch(scene);
         }
         

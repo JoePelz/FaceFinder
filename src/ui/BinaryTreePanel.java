@@ -56,10 +56,12 @@ public class BinaryTreePanel extends JPanel {
         JLabel lInOrder   = new JLabel("  Mode");
         JLabel lPostOrder = new JLabel("  Post-Order");
         final JTextField tePreOrder  = new JTextField();
-        String[] options = new String[3];
+        String[] options = new String[5];
         options[0] = "Continuous";
-        options[1] = "Best Match";
-        options[2] = "Debug";
+        options[1] = "Best Match v space";
+        options[2] = "Best Match v faces";
+        options[3] = "Debug v space";
+        options[4] = "Debug v faces";
         final JComboBox<String> cbMode   = new JComboBox<String>(options);
         final JTextField tePostOrder = new JTextField();
         cbMode.setEditable(false);

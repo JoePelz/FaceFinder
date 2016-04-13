@@ -5,12 +5,15 @@ package core;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.util.SortedMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
+import core.EntryPoint.Mode;
 import facerecog.FaceImage;
 import facerecog.FaceRecognition;
+import facerecog.FaceSpaceTheta;
 import utilities.Thumbnails;
 
 /**
@@ -66,12 +69,22 @@ public class MatchWorker implements Runnable {
 
     public void checkMatch(Point point, BufferedImage scene) {
         BufferedImage tempImg;
-        double tempDist;
+        double tempDist = Double.MAX_VALUE;
         //tempImg = Thumbnails.scaleTarget(scene, point.x, point.y, 128);
         //tempImg = Thumbnails.getWider(tempImg);
         tempImg = Thumbnails.scaleTarget(scene, point.x, point.y);
         FaceImage testFace = new FaceImage(tempImg, "testFace");
-        tempDist = recognizer.getThetaDistance(testFace);
-        parent.gridResult(point, tempDist);
+        
+        if (EntryPoint.mode == Mode.BESTMATCHX || EntryPoint.mode == Mode.DEBUGX) {
+            SortedMap<Double, FaceImage> results = recognizer.compare(testFace);
+            parent.gridResult(point, results.firstKey());
+        } else {
+            tempDist = recognizer.getThetaDistance(testFace);
+            FaceSpaceTheta fst = recognizer.getFaceSpaceTheta();
+            if (tempDist < fst.getMinTheta() || tempDist > fst.getMaxTheta()) {
+                return;
+            }
+            parent.gridResult(point, tempDist);
+        }
     }
 }

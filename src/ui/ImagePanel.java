@@ -44,7 +44,7 @@ public class ImagePanel extends JPanel implements Runnable {
             g.scale(scale, scale);
             g.drawImage(image, 0, 0, null);
         }
-        if (EntryPoint.mode == Mode.BESTMATCH) {
+        if (EntryPoint.mode == Mode.BESTMATCH || EntryPoint.mode == Mode.BESTMATCHX) {
             if (center.x != 0) {
                 g.setColor(Color.YELLOW);
                 g.drawRect(center.x - 64, center.y - 128, 128, 256);
@@ -73,7 +73,7 @@ public class ImagePanel extends JPanel implements Runnable {
             center.setLocation(c);
         }
         
-        if (EntryPoint.mode == Mode.DEBUG) {
+        if (EntryPoint.mode == Mode.DEBUG || EntryPoint.mode == Mode.DEBUGX) {
             final Runnable drawBrightBox = new Runnable() {
                 public void run() {
                     Graphics2D g = (Graphics2D)getGraphics();

@@ -72,7 +72,7 @@ public class CameraWorker implements Runnable {
             ipCrop.setImage(thumbnail, "  Test Face");
             checkForMatch();
             
-            if (EntryPoint.mode == Mode.DEBUG) {
+            if (EntryPoint.mode == Mode.DEBUG || EntryPoint.mode == Mode.DEBUGX) {
                 try {
                     sem_wait.acquire();
                 } catch (InterruptedException e) {

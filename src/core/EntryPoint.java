@@ -15,7 +15,7 @@ import ui.BinaryTreePanel;
  * @version 1.0
  */
 public class EntryPoint {
-    public enum Mode { CONTINUOUS, BESTMATCH, DEBUG }
+    public enum Mode { CONTINUOUS, BESTMATCH, BESTMATCHX, DEBUG, DEBUGX }
     public static Mode mode = Mode.CONTINUOUS;
     public static final boolean DEBUG = true;
     /**
